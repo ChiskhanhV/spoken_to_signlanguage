@@ -1,0 +1,312 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech to Sign Language Converter</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="input-container">
+        <textarea
+          id="textInput"
+          placeholder="Enter text or speak..."
+          readonly
+        ></textarea>
+        <button id="speakButton">&#x1F3A4;</button>
+      </div>
+      <div class="output-container">
+        <h3>Bản dịch</h3>
+        <div id="result">
+          <img id="skeletonImage" />
+        </div>
+      </div>
+    </div>
+    <script>
+      document
+        .getElementById("speakButton")
+        .addEventListener("click", function () {
+          const sleep = (time) =>
+            new Promise((resolve) => setTimeout(resolve, time));
+          const b2text = (blob) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = (e) => resolve(e.srcElement.result);
+              reader.readAsDataURL(blob);
+            });
+
+          const record = async (time) => {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+            recorder.start();
+            await sleep(time);
+            recorder.onstop = async () => {
+              const blob = new Blob(chunks);
+              const text = await b2text(blob);
+              const audioData = text.split(",")[1];
+              const audioBlob = new Blob(
+                [
+                  new Uint8Array(
+                    atob(audioData)
+                      .split("")
+                      .map((char) => char.charCodeAt(0))
+                  ),
+                ],
+                { type: "audio/wav" }
+              );
+              const formData = new FormData();
+              formData.append("audio_data", audioBlob, "audio.wav");
+
+              fetch("/translate", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.error) {
+                    alert(data.error);
+                  } else {
+                    document.getElementById("textInput").value =
+                      data.transcript;
+                    displaySkeleton(data.skeleton_file);
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            };
+            recorder.stop();
+          };
+
+          record(5000); // Ghi âm trong 5 giây
+        });
+
+      function displaySkeleton(skeletonFile) {
+        const skeletonImage = document.getElementById("skeletonImage");
+        const timestamp = new Date().getTime(); // Thêm dấu thời gian hiện tại
+        skeletonImage.src = `/static/skeletons/${skeletonFile}?t=${timestamp}`;
+      }
+    </script>
+  </body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech to Sign Language Converter</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="bg-primary text-white text-center py-3">
+      <h1>Công cụ chuyển tiếng nói thành ngôn ngữ ký hiệu</h1>
+    </header>
+    <div class="container mt-4">
+      <div class="input-container mb-3">
+        <textarea
+          id="textInput"
+          placeholder="Enter text or speak..."
+          readonly
+          class="form-control"
+        ></textarea>
+        <button id="speakButton" class="btn btn-primary mt-2">&#x1F3A4; Nói</button>
+      </div>
+      <div class="output-container">
+        <h3>Bản dịch</h3>
+        <div id="result">
+          <img id="skeletonImage" class="img-fluid" />
+        </div>
+      </div>
+    </div>
+    <footer class="bg-light text-center py-3">
+      <p>
+        Liên hệ: contact@example.com | Điện thoại: 0123456789
+      </p>
+    </footer>
+    <script>
+      document
+        .getElementById("speakButton")
+        .addEventListener("click", function () {
+          const sleep = (time) =>
+            new Promise((resolve) => setTimeout(resolve, time));
+          const b2text = (blob) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = (e) => resolve(e.srcElement.result);
+              reader.readAsDataURL(blob);
+            });
+
+          const record = async (time) => {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+            recorder.start();
+            await sleep(time);
+            recorder.onstop = async () => {
+              const blob = new Blob(chunks);
+              const text = await b2text(blob);
+              const audioData = text.split(",")[1];
+              const audioBlob = new Blob(
+                [
+                  new Uint8Array(
+                    atob(audioData)
+                      .split("")
+                      .map((char) => char.charCodeAt(0))
+                  ),
+                ],
+                { type: "audio/wav" }
+              );
+              const formData = new FormData();
+              formData.append("audio_data", audioBlob, "audio.wav");
+
+              // Hiển thị thông báo đẩy
+              if (Notification.permission === "granted") {
+                new Notification("Đang dịch...");
+              } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then((permission) => {
+                  if (permission === "granted") {
+                    new Notification("Đang dịch...");
+                  }
+                });
+              }
+
+              fetch("/translate", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.error) {
+                    alert(data.error);
+                  } else {
+                    document.getElementById("textInput").value =
+                      data.transcript;
+                    displaySkeleton(data.skeleton_file);
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            };
+            recorder.stop();
+          };
+
+          record(5000); // Ghi âm trong 5 giây
+        });
+
+      function displaySkeleton(skeletonFile) {
+        const skeletonImage = document.getElementById("skeletonImage");
+        const timestamp = new Date().getTime(); // Thêm dấu thời gian hiện tại
+        skeletonImage.src = `/static/skeletons/${skeletonFile}?t=${timestamp}`;
+      }
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech to Sign Language Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="bg-primary text-white text-center py-3">
+      <h1>Công cụ chuyển tiếng nói thành ngôn ngữ ký hiệu</h1>
+    </header>
+    <div class="container mt-4">
+      <div class="input-container mb-3">
+        <textarea id="textInput" placeholder="Enter text or speak..." readonly class="form-control"></textarea>
+        <button id="speakButton" class="btn btn-primary mt-2">&#x1F3A4; Nói</button>
+      </div>
+      <div class="output-container">
+        <h3>Bản dịch</h3>
+        <div id="result">
+          <img id="skeletonImage" class="img-fluid" />
+        </div>
+      </div>
+    </div>
+    <footer class="bg-light text-center py-3">
+      <p>Liên hệ: n20dccn032@ptithcm.edu.vn | Điện thoại: 0123456789</p>
+    </footer>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (Notification.permission !== 'granted') {
+          Notification.requestPermission();
+        }
+      });
+
+      document.getElementById("speakButton").addEventListener("click", function () {
+        const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
+        const b2text = (blob) => new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = (e) => resolve(e.srcElement.result);
+          reader.readAsDataURL(blob);
+        });
+
+        const record = async (time) => {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const recorder = new MediaRecorder(stream);
+          const chunks = [];
+          recorder.ondataavailable = (e) => chunks.push(e.data);
+          recorder.start();
+          await sleep(time);
+          recorder.onstop = async () => {
+            const blob = new Blob(chunks);
+            const text = await b2text(blob);
+            const audioData = text.split(",")[1];
+            const audioBlob = new Blob([new Uint8Array(atob(audioData).split("").map((char) => char.charCodeAt(0)))], { type: "audio/wav" });
+            const formData = new FormData();
+            formData.append("audio_data", audioBlob, "audio.wav");
+
+            // Hiển thị thông báo đẩy
+            if (Notification.permission === "granted") {
+              new Notification("Đang dịch...");
+            }
+
+            fetch("/translate", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.error) {
+                  alert(data.error);
+                } else {
+                  document.getElementById("textInput").value = data.transcript;
+                  displaySkeleton(data.skeleton_file);
+                }
+              })
+              .catch((error) => console.error("Error:", error));
+          };
+          recorder.stop();
+        };
+
+        record(5000); // Ghi âm trong 5 giây
+      });
+
+      function displaySkeleton(skeletonFile) {
+        const skeletonImage = document.getElementById("skeletonImage");
+        const timestamp = new Date().getTime(); // Thêm dấu thời gian hiện tại
+        skeletonImage.src = `/static/skeletons/${skeletonFile}?t=${timestamp}`;
+      }
+    </script>
+  </body>
+</html>

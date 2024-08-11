@@ -1,0 +1,5 @@
+# Bỏ qua folder datasets
+datasets/
+
+# Bỏ qua folder videos trong folder static
+static/videos/
