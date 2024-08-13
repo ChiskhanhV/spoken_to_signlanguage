@@ -10,7 +10,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 app = Flask(__name__)
 
 # URL của API trên Google Colab
-COLAB_API_URL = 'https://28d2-34-168-131-239.ngrok-free.app/transcribe'
+COLAB_API_URL = 'https://03fd-34-127-36-242.ngrok-free.app/transcribe'
 
 # Paths to the video and script folders
 VIDEOS_PATH = 'datasets/videos'

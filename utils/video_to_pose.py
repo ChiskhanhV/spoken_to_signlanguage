@@ -26,7 +26,8 @@ def pose_estimate(video_path, output_path, format):
         pose = load_holistic(frames, fps=fps, width=width, height=height, progress=True, 
             additional_holistic_config={'model_complexity': 2, 'refine_face_landmarks': True})
 
-        pose = pose.get_components(["POSE_LANDMARKS", "FACE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"], {"FACE_LANDMARKS": FACEMESH_CONTOURS_POINTS})
+        pose = pose.get_components(["POSE_LANDMARKS", "FACE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"], 
+                                   {"FACE_LANDMARKS": FACEMESH_CONTOURS_POINTS})
     else:
         raise NotImplementedError('Pose format not supported')
     print('Writing ...')
